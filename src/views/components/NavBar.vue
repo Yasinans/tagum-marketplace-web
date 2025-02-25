@@ -12,7 +12,8 @@ function changePage(page){
 <!--Admin NavBar! Implement separate mavbar typesht-->
 <template>
     <div class="navbar">
-        <div class="navbar-logo"></div>
+        <div class="w-full h-[71px]  shrink-0  mb-8"></div>
+        <div class="nav-title mr-20 font-bold text-sm pb-2">MAIN MENU</div>
         <div class="nav-item" v-bind:class="{'nav-item-selected':currentPage==='dashboard'}">
             <router-link @click="changePage('dashboard')" class="nav-item-title" to="/"><chart-bar-square-icon class="icon"/>Dashboard</router-link>
         </div>
@@ -44,19 +45,12 @@ function changePage(page){
     display: flex;
     flex-direction: column;
     height:100%;
-    background-color: #684B4B;
-    width:234px;
+    width:220px;
     box-sizing: border-box;
 }
 
 .navbar::-webkit-scrollbar {
   display: none;
-}
-
-.navbar-logo {
-    flex-shrink: 0;
-    height:110px;
-    width:100%;
 }
 
 .nav-item-selected {
@@ -74,9 +68,8 @@ function changePage(page){
 
 .nav-item {
     flex-shrink: 0;
-
     margin:0;
-    width:208px;
+    width:190px;
     height:45px;
     align-self: self-end;
     align-content: center;
@@ -84,7 +77,7 @@ function changePage(page){
     transition: all 100ms ease-in-out;
 }
 .nav-item-title {
-    padding:14px 20px 0 20px;
+    padding:14px 0 0 20px;
     height:100%;
     width:100%;
     display: inline-flex;
@@ -92,5 +85,9 @@ function changePage(page){
     color: #F1E6E6;
     font-size: 14px;
     font-weight: 400;
+}
+
+.nav-title {
+    color:rgba(255, 255, 255, 0.61);
 }
 </style>

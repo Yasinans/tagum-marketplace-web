@@ -14,13 +14,13 @@ import { ref } from 'vue'
 
 <style scoped>
 .icon{
-    color:#3f0b0b;
+    color:#f7f0f0;
     padding-left:15px;
     height: 20px;
 }
 
 .icon:hover{
-    color: #2b0707;
+    color: #ac9696;
     cursor:pointer;
 }
 .account-op{
@@ -33,7 +33,7 @@ import { ref } from 'vue'
 .current-user{
     display: inline-flex;
     text-wrap:nowrap;
-    color: #4E2B2B;
+    color: #faf4f4;
     font-size: 14px;
 }
 .current-user > p:nth-of-type(1){
@@ -49,7 +49,6 @@ import { ref } from 'vue'
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    height:71px;
-    background-color: #967D7D;
+    height:60px;
 }
 </style>
