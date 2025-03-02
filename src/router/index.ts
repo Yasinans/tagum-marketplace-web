@@ -14,15 +14,22 @@ const router = createRouter({
             path:'/admin', 
             component: AdminPanel,
             children: [
-                {path: '', component: AdminDashboard},
-                {path: '/', component: AdminDashboard},
-                {path: '/users', component: AdminUserManagement},
-                {path: '/products', component: AdminProduct},
-                {path: '/sales', component: AdminSales},
-                {path: '/settings', component: AdminSettings}
+                {
+                    path: '/admin', 
+                    component: AdminDashboard,
+                    meta: { 
+                        requiresAuth: true 
+                    }},
+                {path: '/admin/users', component: AdminUserManagement},
+                {path: '/admin/products', component: AdminProduct},
+                {path: '/admin/sales', component: AdminSales},
+                {path: '/admin/settings', component: AdminSettings}
             ]
         },
-        { path:'/login', component: Login}
+        { 
+            path:'/', 
+            component: Login
+        }
     ]
 })
 export default router;

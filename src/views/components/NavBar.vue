@@ -15,19 +15,19 @@ function changePage(page){
         <div class="w-full h-[71px]  shrink-0  mb-8"></div>
         <div class="nav-title mr-20 font-bold text-sm pb-2">MAIN MENU</div>
         <div class="nav-item" v-bind:class="{'nav-item-selected':currentPage==='dashboard'}">
-            <router-link @click="changePage('dashboard')" class="nav-item-title" to="/"><chart-bar-square-icon class="icon"/>Dashboard</router-link>
+            <router-link @click="changePage('dashboard')" class="nav-item-title" to="/admin"><chart-bar-square-icon class="icon"/>Dashboard</router-link>
         </div>
         <div class="nav-item" v-bind:class="{'nav-item-selected':currentPage==='users'}">
-            <router-link @click="changePage('users')"  class="nav-item-title" to="/users"><users-icon class="icon"/>User Management</router-link>
+            <router-link @click="changePage('users')"  class="nav-item-title" to="/admin/users"><users-icon class="icon"/>User Management</router-link>
         </div>
         <div class="nav-item" v-bind:class="{'nav-item-selected':currentPage==='product'}">
-            <router-link  @click="changePage('product')" class="nav-item-title" to="/products"><archive-box-arrow-down-icon class="icon"/>Product & Inventory</router-link>
+            <router-link  @click="changePage('product')" class="nav-item-title" to="/admin/products"><archive-box-arrow-down-icon class="icon"/>Product & Inventory</router-link>
         </div>
         <div class="nav-item" v-bind:class="{'nav-item-selected':currentPage==='sales'}">
-            <router-link  @click="changePage('sales')" class="nav-item-title" to="/sales"><chart-bar-square-icon class="icon"/>Sales & Orders</router-link>
+            <router-link  @click="changePage('sales')" class="nav-item-title" to="/admin/sales"><chart-bar-square-icon class="icon"/>Sales & Orders</router-link>
         </div>
         <div class="nav-item" v-bind:class="{'nav-item-selected':currentPage==='settings'}">
-            <router-link  @click="changePage('settings')" class="nav-item-title" to="/settings"><cog8-tooth-icon class="icon"/>Settings</router-link>
+            <router-link  @click="changePage('settings')" class="nav-item-title" to="/admin/settings"><cog8-tooth-icon class="icon"/>Settings</router-link>
         </div>
     </div>
 </template>
