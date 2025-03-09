@@ -13,6 +13,7 @@ onMounted(() => {
     <router-view />
   </main>
 </template>
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wdth,wght@0,75..100,100..900;1,75..100,100..900&display=swap');
 @import "tailwindcss";
@@ -33,6 +34,7 @@ thead td {
   font-size: 14px;
   color: rgb(245, 245, 245);
   font-weight: 700;
+
 }
 
 tr {
@@ -41,20 +43,39 @@ tr {
 
 tbody td {
   height: 10px;
-  font-size: 14px;
+  font-size: 13px;
   padding: 12px 0 12px 20px;
   border-top: 1px solid rgb(124, 90, 90);
   font-variation-settings:
     "wdth" 75;
-
 }
-
 tbody td:last-child {
   padding-right: 12px;
 }
 
+/*
+Modify DaisyUI or unsa pa ba na
+*/
+.stats{
+  background: linear-gradient(#754444 0%, #8b5151 96%,#a75b5b 100%);
+}
 
+.stat-figure{
+  padding:10px;
+  background-color:#583037;
+  border-radius:100px;
+  box-shadow: inset 0 2px 4px rgb(0 0 0 / 0.2);
+}
 /*Final CSS*/
+
+.tg-widget-c {
+  border-radius: 7px;
+  background-color:#5a3939;
+  padding: 10px 6px 0px 6px;
+  box-shadow: inset 0 1px 8px rgb(0 0 0 / 0.2);
+
+
+}
 .tg-table-container {
   width: 100%;
   height: 100%;
@@ -62,7 +83,6 @@ tbody td:last-child {
   max-height: 600px;
   padding: 6px;
   border-radius: 7px;
-
   background-color: #5a3939;
   box-shadow: inset -12px -8px 40px #421f1f5e;
 }
@@ -71,11 +91,11 @@ tbody td:last-child {
   max-height: none !important;
 }
 .tg-table {
+  table-layout: fixed;
   flex-grow: 1;
   border-collapse: collapse;
   width: 100%;
 }
-
 /*Custom Widget */
 .tg-widget {
   flex: 1 1 auto;
@@ -84,9 +104,11 @@ tbody td:last-child {
   display: flex;
   flex-direction: column;
   border-radius: 13px;
-  background-color: #744e4e;
+  /*background-color: #744e4e;*/
+  background: linear-gradient(#804c4c 0%, #8b5151 98%,#9c4e4e 100%);
+
   color: white;
-  padding: 13px;
+  padding: 13px 20px 13px 20px;
   box-shadow: var(--shadow-md);
 }
 
@@ -117,6 +139,22 @@ tbody td:last-child {
   margin: 6px;
 }
 
+.tg-modal-delete{
+  width: 100%;
+  background: #86131342;
+  display:flex;
+  justify-content: end;
+  padding: 8px 12px 8px 12px;
+}
+
+.fieldset {
+  border:none;
+  background-color: rgba(165, 59, 59, 0.349)
+}
+
+.fieldset p{
+  color:rgb(255, 255, 255);
+}
 /*Temporary Modal*/
 .saveinfo {
   border-color: rgb(117, 117, 117);
@@ -125,11 +163,13 @@ tbody td:last-child {
 }
 
 .modal-box {
-  color: rgb(39, 38, 38);
+  color: rgb(8, 1, 1);
   font-size: 14px;
-  background-color: #ebbb95;
+  background: linear-gradient(#e7926b, #f19966); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
 }
-
+.modal-operation {
+  background: wheat;
+}
 .modal-box select,
 .modal-box input {
   border: transparent;

@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import axios from "axios";
 import { useRouter } from 'vue-router';
-
+import { getRole } from "../utils/authUtil.ts";
 const username = ref("");
 const password = ref("");
 const message = ref("");
@@ -19,12 +19,11 @@ const login = async () => {
 
     if (res.data.token) {
       localStorage.setItem("token", res.data.token);
-      const getRole = await axios.get("http://localhost:3000/api/auth", {
-        headers: {
-          'Authorization': `Bearer ${res.data.token}`
-        }
-      });
-      if (getRole.data.Role == "admin") router.push("/admin");
+      
+      if (getRole() == "admin") router.push("/admin");
+      else if (getRole() == "stockman") router.push("/stockman");
+      else if (getRole() == "cashier") router.push("/cashier");
+
       message.value = "";
     }
   } catch (err) {

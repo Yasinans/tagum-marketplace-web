@@ -2,24 +2,17 @@
 import { UserIcon, ArrowRightCircleIcon } from '@heroicons/vue/24/solid';
 import { ref } from 'vue'
 import { useRouter } from 'vue-router';
-
+import { getUsername } from '../../utils/authUtil'
 const router = useRouter();
 const username = ref('');
-const updateUsername = () => {
-    const token = localStorage.getItem("token") || "";
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return username.value = payload.username
-}
 function logout(){
     localStorage.removeItem("token");
     router.push("/");
 }
-
-updateUsername();
 </script>
 <template>
     <div class="header">
-        <div class="current-user"><p>Logged in as</p><p>{{username}}</p></div>
+        <div class="current-user"><p>Logged in as</p><p>{{getUsername()}}</p></div>
         <div class="account-op">
            <arrow-right-circle-icon class="icon" @click="logout()"/>
         </div>

@@ -1,117 +1,21 @@
 <script setup lang="ts">
-import { computed, ref, reactive, onMounted } from "vue";
-import axios from "axios";
-import {
-    PlusIcon,
-    ArrowPathRoundedSquareIcon,
-} from '@heroicons/vue/24/solid';
+import { PlusIcon, ArrowPathRoundedSquareIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/solid';
+import { useSupplier } from '../../../composable/useSupplier';
 
-interface SupplierData {
-    id: number;
-    name: string;
-    address: string;
-    email: string;
-    contactno: string;
-}
-
-const selectedSupplierId = ref<number | null>(null);
-const supplierSearch = ref("");
-const supplierDatas = ref<SupplierData[]>([]);
-const messages = reactive({ edit: "", add: "", delete: "" });
-const supplierForm = reactive({
-  name: "",
-  address: "",
-  email: "",
-  contactno: ""
-});
-
-const filteredSupplierDatas = computed(() =>
-
-supplierDatas.value.filter(
-    (e) =>
-      e.name.toLowerCase().includes(supplierSearch.value.toLowerCase())
-  )
-);
-
-const saveSupplier = async (isEdit: boolean) => {
-  if (!supplierForm.name || !supplierForm.address || !supplierForm.email || !supplierForm.contactno) {
-    messages[isEdit ? "edit" : "add"] = "Please fill in all fields.";
-    return;
-  }
-  const contactNoRegex = /^\+?\d{12}$/;
-  if (!contactNoRegex.test(supplierForm.contactno)) {
-    messages[isEdit ? "edit" : "add"] = "Contact number should be in the format +639xxxxxxxxx or 09xxxxxxxxx.";
-    return;
-  }
-
-  try {
-    if (isEdit) {
-      await axios.put(`http://localhost:3000/api/supplier/${selectedSupplierId.value}`, supplierForm);
-      (document.getElementById("editSupplierModal") as HTMLDialogElement).close();
-    } else {
-      await axios.post("http://localhost:3000/api/supplier", supplierForm);
-      (document.getElementById("addSupplierModal") as HTMLDialogElement).close();
-    }
-    loadSupplier();
-  } catch (err) {
-    messages[isEdit ? "edit" : "add"] = axios.isAxiosError(err) ? err.response?.data?.message || "Server error" : "Unexpected error.";
-  }
-};
-
-const deleteSupplier = async () => {
-  if (!selectedSupplierId.value) return (messages.delete = "No supplier selected.");
-
-  try {
-    await axios.delete(`http://localhost:3000/api/supplier/${selectedSupplierId.value}`);
-    (document.getElementById("deleteSupplierModal") as HTMLDialogElement).close();
-    loadSupplier();
-  } catch (err) {
-    messages.delete = axios.isAxiosError(err) ? err.response?.data?.message || "Server error" : "Unexpected error.";
-  }
-};
-const loadSupplier = async () => {
-  try {
-    const [supplierRes] = await Promise.all([
-      axios.get("http://localhost:3000/api/supplier"),
-    ]);
-
-    supplierDatas.value = supplierRes.data.map((supplier: any) => {
-      return {
-        id: supplier.Supplier_ID,
-        name: supplier?.Supplier_Name || "",
-        email: supplier?.Supplier_Email || "",
-        address: supplier?.Supplier_Address || "",
-        contactno: supplier?.Supplier_ContactNo || "",
-      };
-    });
-  } catch (err) {
-    console.error("Error loading suppliers:", err);
-  }
-};
-
+const { selectedSupplierId, supplierSearch, supplierDatas, filteredSupplierDatas, messages, supplierForm, loadSupplier, saveSupplier, deleteSupplier } = useSupplier();
 const loadSupplierModal = (id: number, isEdit: boolean) => {
-  selectedSupplierId.value = id;
-  messages.edit = "";
-  messages.add = "";
-  messages.delete = "";
+    selectedSupplierId.value = id;
+    Object.assign(messages, { edit: "", add: "", delete: "" });
 
-  const supplier = supplierDatas.value.find((e) => e.id === id);
-  if (supplier && isEdit) {
-    Object.assign(supplierForm, supplier);
-  } else {
-    Object.assign(supplierForm, supplier);
-    if (id === 0) {
-      Object.assign(supplierForm, {
-        name: "",
-        address: "",
-        email: "",
-        contactno: ""
-      });
-    }
-  }
-};
+    const supplier = supplierDatas.value.find((e) => e.id === id);
+    Object.assign(
+      supplierForm,
+      isEdit && supplier
+        ? supplier
+        : { id: 0, name: "", address: "", email: "", contactno: "" }
+    );
+  };
 
-onMounted(loadSupplier);
 
 </script>
 
@@ -157,7 +61,7 @@ onMounted(loadSupplier);
                                     onclick="editSupplierModal.showModal()" @click="loadSupplierModal(supplier.id, true)">
                                     Edit
                                 </button>
-                                <button onclick="deleteSupplierModal.showModal()"  @click="loadSupplierModal(supplier.id, false)"
+                                <button onclick="deleteSupplierModal.showModal()"  @click="supplierForm.name=supplier.name;selectedSupplierId=supplier.id"
                                     class="btn h-[25px] p-[12px] shadow-md bg-[#fc5861] border-none">
                                     Delete
                                 </button>

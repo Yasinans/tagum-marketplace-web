@@ -1,101 +1,21 @@
 <script setup lang="ts">
 import {
   CalendarDateRangeIcon,
-  BanknotesIcon,
-  PresentationChartLineIcon,
-  ArchiveBoxIcon,
   ArrowDownCircleIcon,
-  UserGroupIcon,
   ArrowPathRoundedSquareIcon,
   ListBulletIcon
 } from '@heroicons/vue/24/solid';
 
-const options = {
-  chart: {
-    foreColor: '#FFFFFF',
-    toolbar: {
-      show: false
-    }
-  },
-  xaxis: {
-    labels: {
-      show: true,
-      style: {
-        fontFamily: 'Roboto',
-        fontWeight: '500'
-      }
-    },
-    categories: [1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998]
-  },
-  theme: {
-    monochrome: {
-      enabled: true,
-      color: '#ff673d'
-    }
-  },
-  yaxis: {
-    labels: {
-      show: true,
-      style: {
-        fontFamily: 'Roboto',
-        fontWeight: '500'
-      }
-    }
-  },
-  dataLabels: {
-    style: {
-      fontFamily: 'Roboto',
-      fontSize: '13px',
-      fontWeight: '500',
-      fill: '#ffffff'
-    }
-  },
-  tooltip: {
-    enabled: false
-  }
-}
-
-const series = [{
-  name: 'series-1',
-  data: [30, 40, 45, 50, 49, 60, 70, 91],
-}]
 </script>
 
 <template>
   <main class="dashboard-container">
     <div class="font-med text-[18px] text-white tracking-tighter">Admin Dashboard</div>
     <div class="dashboard-1">
-      <div class="dashboard-1-1 stats bg-[#744e4e] shadow-md flex-auto">
-        <div class="stat">
-          <div class="stat-figure text-[#fff0ed]">
-            <banknotes-icon class="h-6" />
-          </div>
-          <div class="stat-title text-[#e3dddc]">Total Earnings</div>
-          <div class="stat-value text-white text-[24px]">PHP 120,000.00</div>
-          <div class="stat-desc text-[#e3dddc]">Jan 1st - Feb 1st</div>
-        </div>
-      </div>
-      <div class="dashboard-1-2 stats bg-[#744e4e] shadow-md flex-auto">
-        <div class="stat">
-          <div class="stat-figure text-[#fff0ed]">
-            <presentation-chart-line-icon class="h-6" />
-          </div>
-          <div class="stat-title text-[#e3dddc]">Number of Sales</div>
-          <div class="stat-value text-white text-[24px]">12</div>
-          <div class="stat-desc text-[#11f711]">↘︎ 90 (14%)</div>
-        </div>
-      </div>
-      <div class="dashboard-1-3 stats bg-[#744e4e] shadow-md flex-auto">
-        <div class="stat">
-          <div class="stat-figure text-[#fff0ed]">
-            <archive-box-icon class="h-6" />
-          </div>
-          <div class="stat-title text-[#e3dddc]">Total Products</div>
-          <div class="stat-value text-white text-[24px]">12</div>
-          <div class="stat-desc text-[#00ed00]">↘︎ 90 (14%)</div>
-        </div>
-      </div>
-      <div class="dashboard-1-4 stats bg-[#744e4e] shadow-md flex-auto">
+      <total-earning-widget/>
+      <number-sales-widget/>
+      <total-products-widget/>
+      <!--<div class="stats bg-[#744e4e] shadow-md flex-auto">
         <div class="stat">
           <div class="stat-figure text-[#fff0ed]">
             <arrow-down-circle-icon class="h-6" />
@@ -104,45 +24,13 @@ const series = [{
           <div class="stat-value text-white text-[24px]">12</div>
           <div class="stat-desc text-[#f5310f]">↘︎ 90 (14%)</div>
         </div>
-      </div>
-      <div class="dashboard-1-5 stats bg-[#744e4e] shadow-md flex-auto">
-        <div class="stat">
-          <div class="stat-figure text-[#fff0ed]">
-            <user-group-icon class="h-6" />
-          </div>
-          <div class="stat-title text-[#e3dddc]">Customers</div>
-          <div class="stat-value text-white text-[24px]">500 Customers</div>
-          <div class="stat-desc text-[#e3dddc]">Jan 1st - Feb 1st</div>
-        </div>
-      </div>
+      </div>-->
+      <total-customers-widget/>
     </div>
     <div class="dashboard-2">
-      <div class="dashboard-2-1 widget shadow-md">
-        <div class="dashboard-wHead">
-          <div>
-            Sales Trends
-          </div>
-          <div class="flex">
-            <div class="d-button bg-transparent mr-2 tooltip" data-tip="Refresh">
-              <arrow-path-rounded-square-icon class="h-[20px] w-[20px] m-[6px]" />
-            </div>
-            <div class="dropdown dropdown-end tooltip" data-tip="Range">
-              <div tabindex="0" role="button" class="d-button bg-transparent">
-                <calendar-date-range-icon class="icon" />
-              </div>
-              <ul tabindex="0" class="dropdown-content menu bg-[#1f1619] mt-[3px] rounded-box z-[1] w-30 shadow-lg">
-                <li><a>Weekly</a></li>
-                <li><a>Monthly</a></li>
-                <li><a>Quarterly</a></li>
-                <li><a>Semi-Annually</a></li>
-                <li><a>Yearly</a></li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        <apexchart type="bar" width="100%" height="200px" :options="options" :series="series" />
-      </div>
+      <sales-trends-widget/>
     </div>
+    <!--
     <div class="dashboard-3">
       <div class="dashboard-3-1 widget shadow-md">
         <div class="dashboard-wHead">
@@ -274,7 +162,7 @@ const series = [{
           </tbody>
         </table>
       </div>
-    </div>
+    </div>-->
   </main>
 </template>
 

@@ -1,278 +1,260 @@
 <script setup lang="ts">
-import { computed, ref, reactive, onMounted } from "vue";
-import axios from "axios";
+import { useProduct } from "../../../composable/useProduct";
+import { useBrand } from "../../../composable/useBrand";
 import {
-    PlusIcon,
-    ArrowPathRoundedSquareIcon,
-} from '@heroicons/vue/24/solid';
+  PlusIcon,
+  ArrowPathRoundedSquareIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/vue/24/solid";
+import { ref } from "vue";
 
-interface ProductData {
-    id: number;
-    name: string;
-    supplierId: number;
-    supplierName: string;
-    brandId: number;
-    brandName: string;
-}
+const {
+  selectedProductId,
+  productSearch,
+  messages,
+  productForm,
+  filteredProductDatas,
+  loadProduct,
+  saveProduct,
+  deleteProduct,
+  productDatas,
+  resetProductForm
+} = useProduct();
 
-const selectedProductId = ref<number | null>(null);
-const productSearch = ref("");
-const productDatas = ref<ProductData[]>([]);
-const messages = reactive({ edit: "", add: "", delete: "" });
-const productForm = reactive({
-  name: "",
-  supplierId: null,
-  brandId: null
+const {
+  brandDatas
+} = useBrand();
+
+const validationErrors = ref({
+    Product_Name: "",
+    Brand_ID: "",
 });
-const suppliers = ref<{ id: number, name: string }[]>([]);
-const brands = ref<{ id: number, name: string }[]>([]);
 
-const filteredProductDatas = computed(() =>
+const resetValidationErrors = () => {
+    validationErrors.value = {
+        Product_Name: "",
+        Brand_ID: "",
+    };
+};
 
-productDatas.value.filter(
-    (e) =>
-      e.name.toLowerCase().includes(productSearch.value.toLowerCase())
-  )
-);
+const validateProductForm = () => {
+    validationErrors.value = {
+        Product_Name: productForm.value.Product_Name ? "" : "Product Name is required.",
+        Brand_ID: productForm.value.Brand_ID ? "" : "Brand is required.",
+    };
 
-const saveProduct = async (isEdit: boolean) => {
-  if (!productForm.name || productForm.supplierId === null || productForm.brandId === null) {
-    messages[isEdit ? "edit" : "add"] = "Please fill in all fields.";
-    return;
-  }
-  const { name, supplierId, brandId } = productForm;
-  try {
-    if (isEdit) {
-      await axios.put(`http://localhost:3000/api/product/${selectedProductId.value}`, { name, supplierId, brandId });
-      (document.getElementById("editProductModal") as HTMLDialogElement).close();
-    } else {
-      await axios.post("http://localhost:3000/api/product", { name, supplierId, brandId });
-      (document.getElementById("addProductModal") as HTMLDialogElement).close();
+    return Object.values(validationErrors.value).every((error) => error === "");
+};
+
+const handleSubmit = (isEdit: boolean) => {
+    if (validateProductForm()) {
+        saveProduct(isEdit);
     }
-    loadProduct();
-  } catch (err) {
-    messages[isEdit ? "edit" : "add"] = axios.isAxiosError(err) ? err.response?.data?.message || "Server error" : "Unexpected error.";
-  }
 };
-
-const deleteProduct = async () => {
-  if (!selectedProductId.value) return (messages.delete = "No product selected.");
-
-  try {
-    await axios.delete(`http://localhost:3000/api/product/${selectedProductId.value}`);
-    (document.getElementById("deleteProductModal") as HTMLDialogElement).close();
-    loadProduct();
-  } catch (err) {
-    messages.delete = axios.isAxiosError(err) ? err.response?.data?.message || "Server error" : "Unexpected error.";
-  }
-};
-
-const loadProduct = async () => {
-  try {
-    const [productRes, supplierRes, brandRes] = await Promise.all([
-      axios.get("http://localhost:3000/api/product"),
-      axios.get("http://localhost:3000/api/supplier"),
-      axios.get("http://localhost:3000/api/brand"),
-    ]);
-
-    productDatas.value = productRes.data.map((product: any) => {
-      return {
-        id: product.Product_ID,
-        name: product?.Product_Name || "",
-        supplierId: product?.Supplier_ID || null,
-        supplierName: product?.Supplier_Name || "",
-        brandId: product?.Brand_ID || null,
-        brandName: product?.Brand_Name || "",
-      };
-    });
-
-    suppliers.value = supplierRes.data.map((supplier: any) => ({
-      id: supplier.Supplier_ID,
-      name: supplier.Supplier_Name
-    }));
-
-    brands.value = brandRes.data.map((brand: any) => ({
-      id: brand.Brand_ID,
-      name: brand.Brand_Name
-    }));
-
-  } catch (err) {
-    console.error("Error loading products:", err);
-  }
-};
-
-const loadProductModal = (id: number, isEdit: boolean) => {
-  selectedProductId.value = id;
-  messages.edit = "";
-  messages.add = "";
-  messages.delete = "";
-
-  const product = productDatas.value.find((e) => e.id === id);
-  if (product && isEdit) {
-    Object.assign(productForm, product);
-  } else {
-    Object.assign(productForm, product);
-    if (id === 0) {
-      Object.assign(productForm, {
-        name: "",
-        supplierId: null,
-        brandId: null
-      });
-    }
-  }
-};
-
-onMounted(loadProduct);
 
 </script>
 
 <template>
-    <div class="tg-widget">
-        <div class="tg-widget-h">
-            <div>
-                Products
-            </div>
-            <div class="flex">
-                <label class="input text-[14px] text-black h-[32px] mr-2 grow bg-[#f7f2f2]">
-                    <magnifying-glass-icon class="h-[20px] pr-1 " />
-                    <input v-model="productSearch" type="search" class="grow" placeholder="Search Product Name">
-                </label>
-                <div @click="loadProduct()" class="tg-widget-btn mr-2 tooltip tooltip-left" data-tip="Refresh">
-                    <arrow-path-rounded-square-icon class="tg-widget-btn-icon" />
-                </div>
-                <div @click="loadProductModal(0, false)" onclick="addProductModal.showModal()" class="tg-widget-btn mr-2 tooltip tooltip-left" data-tip="Add New Product">
-                    <plus-icon class="tg-widget-btn-icon" />
-                </div>
-            </div>
+  <div class="tg-widget">
+    <div class="tg-widget-h">
+      <div>Products</div>
+      <div class="flex">
+        <label
+          class="input text-[14px] text-black h-[32px] mr-2 grow bg-[#f7f2f2]"
+        >
+          <magnifying-glass-icon class="h-[20px] pr-1" />
+          <input
+            v-model="productSearch"
+            type="search"
+            class="grow"
+            placeholder="Search Product Name"
+          />
+        </label>
+        <div
+          @click="loadProduct()"
+          class="tg-widget-btn mr-2 tooltip tooltip-left"
+          data-tip="Refresh"
+        >
+          <arrow-path-rounded-square-icon class="tg-widget-btn-icon" />
         </div>
-        <div class="tg-table-container">
-            <table class="tg-table">
-                <thead>
-                    <tr>
-                        <td>Product Name</td>
-                        <td>Supplier</td>
-                        <td>Brand</td>
-                        <td>Action</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="product in filteredProductDatas" :key="product.id">
-                        <td>{{ product.name }}</td>
-                        <td>{{ product.supplierName }}</td>
-                        <td>{{ product.brandName }}</td>
-                        <td>
-                            <div class="flex gap-[10px] justify-start !pr-[20px] ">
-                                <button class="btn h-[25px] p-[12px] shadow-md bg-[#f5e6e6] border-none"
-                                    onclick="editProductModal.showModal()" @click="loadProductModal(product.id, true)">
-                                    Edit
-                                </button>
-                                <button onclick="deleteProductModal.showModal()"  @click="loadProductModal(product.id, false)"
-                                    class="btn h-[25px] p-[12px] shadow-md bg-[#fc5861] border-none">
-                                    Delete
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div
+          @click="resetProductForm(); resetValidationErrors();"
+          onclick="addProductModal.showModal()"
+          class="tg-widget-btn mr-2 tooltip tooltip-left"
+          data-tip="Add New Product"
+        >
+          <plus-icon class="tg-widget-btn-icon" />
         </div>
+      </div>
     </div>
+    <div class="tg-table-container">
+      <table class="tg-table">
+        <thead>
+          <tr>
+            <td>Product Name</td>
+            <td>Brand</td>
+            <td>Action</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="product in filteredProductDatas" :key="product.Product_ID">
+            <td>{{ product.Product_Name }}</td>
+            <td>{{ product.Brand_Name }}</td>
+            <td>
+              <div class="flex gap-[10px] justify-start !pr-[20px]">
+                <button
+                  class="btn h-[25px] p-[12px] shadow-md bg-[#f5e6e6] border-none"
+                  onclick="editProductModal.showModal()"
+                  @click="
+                    productForm = {...product};
+                    selectedProductId = product.Product_ID;
+                    resetValidationErrors();
+                  "
+                >
+                  Edit
+                </button>
+                <button
+                  onclick="deleteProductModal.showModal()"
+                  @click="
+                    productForm = {...product};
+                    selectedProductId = product.Product_ID;
+                  "
+                  class="btn h-[25px] p-[12px] shadow-md bg-[#fc5861] border-none"
+                >
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-    <!--Add Product Modal-->
-    <dialog id="addProductModal" class="modal">
-      <div class="modal-box !max-w-[300px]">
+  <dialog id="addProductModal" class="modal">
+    <div class="modal-box !max-w-fit">
+      <div class="leading-none mb-1">
+        <p class="text-lg font-bold">Add Product Info</p>
+      </div>
+      <fieldset class="fieldset w-xs bg-base-200 border border-base-300 p-4 rounded-box mt-2">
+        <div class="flex flex-col">
+          <p class="text-xs pb-1">Product Name:</p>
+          <input
+            v-model="productForm.Product_Name"
+            type="text"
+            placeholder="Product Name"
+            class="rounded-[6px] px-2 py-1 max-w-xs"
+          />
+          <p v-if="validationErrors.Product_Name" class="text-xs pt-1 !text-[#5e050a]">
+            {{ validationErrors.Product_Name }}
+          </p>
+        </div>
+        <div class="flex flex-col pt-2">
+          <p class="text-xs pb-1">Brand:</p>
+          <select
+            v-model="productForm.Brand_ID"
+            class="rounded-[6px] px-2 py-1 max-w-xs"
+          >
+            <option value="" disabled selected>Select Brand</option>
+            <option v-for="brand in brandDatas" :value="brand.Brand_ID" :key="brand.Brand_ID">
+              {{ brand.Brand_Name }}
+            </option>
+          </select>
+          <p v-if="validationErrors.Brand_ID" class="text-xs pt-1 !text-[#5e050a]">
+            {{ validationErrors.Brand_ID }}
+          </p>
+        </div>
+        <div class="text-xs pt-2 text-[#5e050a] text-wrap">{{ messages.add }}</div>
+      </fieldset>
+      <div class="modal-action">
         <form method="dialog">
-          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+          <button class="btn shadow-xs h-7 mr-2 px-2 py-1 text-[12px]">Cancel</button>
         </form>
-        <div class="leading-none mb-1">
-          <p class="text-lg font-bold">Add Product Info</p>
-        </div>
-        <div id="edit-form">
-          <div class="pt-3 flex flex-col">
-            <p class="text-xs pb-1">Product Name:</p>
-            <input v-model="productForm.name" type="text" placeholder="Product Name"
-              class="rounded-[6px] px-2 py-1 max-w-xs" />
-          </div>
-          <div class="pt-3 flex flex-col">
-            <p class="text-xs pb-1">Supplier:</p>
-            <select v-model="productForm.supplierId" class="rounded-[6px] px-2 py-1 max-w-xs">
-              <option v-for="supplier in suppliers" :value="supplier.id" :key="supplier.id">{{ supplier.name }}</option>
-            </select>
-          </div>
-          <div class="pt-3 flex flex-col">
-            <p class="text-xs pb-1">Brand:</p>
-            <select v-model="productForm.brandId" class="rounded-[6px] px-2 py-1 max-w-xs">
-              <option v-for="brand in brands" :value="brand.id" :key="brand.id">{{ brand.name }}</option>
-            </select>
-          </div>
-          <div class="text-xs pt-2 text-[#f00] text-wrap">{{ messages.add }}</div>
-        </div>
-        <div class="modal-action">
-          <button @click="saveProduct(false)" class="btn shadow-md  text-[#3f1e61] border-[#877cde] border-1 h-9">
-            Create Product</button>
+        <button
+          @click="handleSubmit(false)"
+          class="btn btn-error shadow-xs h-7 px-2 py-1 text-[12px]"
+        >
+          Add Product
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="editProductModal" class="modal">
+    <div class="modal-box !max-w-fit">
+      <div class="leading-none mb-1 flex items-center">
+        <p class="text-lg font-bold">Edit Product Info</p>
+        <div class="text-[12px] ml-[10px] bg-[#b0594a] text-white badge">
+          {{ productDatas.find(product => product.Product_ID === selectedProductId)?.Product_Name }}
         </div>
       </div>
-    </dialog>
-
-    <!--Edit Product Modal-->
-    <dialog id="editProductModal" class="modal">
-      <div class="modal-box !max-w-[300px]">
+      <fieldset class="fieldset w-xs bg-base-200 border border-base-300 p-4 rounded-box mt-2">
+        <div class="flex flex-col">
+          <p class="text-xs pb-1">Product Name:</p>
+          <input
+            v-model="productForm.Product_Name"
+            type="text"
+            placeholder="Product Name"
+            class="rounded-[6px] px-2 py-1 max-w-xs"
+          />
+          <p v-if="validationErrors.Product_Name" class="text-xs pt-1 !text-[#5e050a]">
+            {{ validationErrors.Product_Name }}
+          </p>
+        </div>
+        <div class="flex flex-col pt-2">
+          <p class="text-xs pb-1">Brand:</p>
+          <select
+            v-model="productForm.Brand_ID"
+            class="rounded-[6px] px-2 py-1 max-w-xs"
+          >
+            <option value="" disabled selected>Select Brand</option>
+            <option v-for="brand in brandDatas" :value="brand.Brand_ID" :key="brand.Brand_ID">
+              {{ brand.Brand_Name }}
+            </option>
+          </select>
+          <p v-if="validationErrors.Brand_ID" class="text-xs pt-1 !text-[#5e050a]">
+            {{ validationErrors.Brand_ID }}
+          </p>
+        </div>
+        <div class="text-xs pt-2 text-[#5e050a] text-wrap">{{ messages.edit }}</div>
+      </fieldset>
+      <div class="modal-action">
         <form method="dialog">
-          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+          <button class="btn shadow-xs h-7 mr-2 px-2 py-1 text-[12px]">Cancel</button>
         </form>
-        <div class="leading-none mb-1">
-          <p class="text-lg font-bold">Edit Product Info</p>
-          <div class="flex items-center ">
-            <p class="text-[11px]">for</p>
-            <div class="text-[10px] ml-[5px] bg-[#b07166] text-white w-min m-min px-1 py-1 rounded-[15px]">
-              {{productForm.name}}
-            </div>
-          </div>
-        </div>
-        <div id="edit-form">
-          <div class="pt-3 flex flex-col">
-            <p class="text-xs pb-1">Product Name:</p>
-            <input v-model="productForm.name" type="text" placeholder="Product Name"
-              class="rounded-[6px] px-2 py-1 max-w-xs" />
-          </div>
-          <div class="pt-3 flex flex-col">
-            <p class="text-xs pb-1">Supplier:</p>
-            <select v-model="productForm.supplierId" class="rounded-[6px] px-2 py-1 max-w-xs">
-              <option v-for="supplier in suppliers" :value="supplier.id" :key="supplier.id">{{ supplier.name }}</option>
-            </select>
-          </div>
-          <div class="pt-3 flex flex-col">
-            <p class="text-xs pb-1">Brand:</p>
-            <select v-model="productForm.brandId" class="rounded-[6px] px-2 py-1 max-w-xs">
-              <option v-for="brand in brands" :value="brand.id" :key="brand.id">{{ brand.name }}</option>
-            </select>
-          </div>
-          <div class="text-xs pt-2 text-[#f00] text-wrap">{{ messages.edit }}</div>
-        </div>
-        <div class="modal-action">
-          <button @click="saveProduct(true)" class="btn shadow-md  text-[#3f1e61] border-[#877cde] border-1 h-9">Save
-            Info</button>
+        <button
+          @click="handleSubmit(true)"
+          class="btn btn-error shadow-xs h-7 px-2 py-1 text-[12px]"
+        >
+          Edit Product Info
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="deleteProductModal" class="modal">
+    <div class="modal-box tg-modal p-0 !max-w-fit !min-w-[400px]">
+      <div class="border-b-1 border-[#8a544a] mb-2 flex items-center pb-2 m-4">
+        <p class="text-[16px] font-bold">Delete Product</p>
+      </div>
+      <div class="mb-4 pl-6 pt-0 pr-6 flex flex-col">
+        <p class="text-[14px] font-medium">Do you really want to delete this product?</p>
+        <p class="text-[11px]">This action cannot be reversed</p>
+        <div class="self-center mt-2 text-xs bg-[#9c2737] text-white w-min h-min m-min px-2 py-1 rounded-[10px]">
+          {{ productForm.Product_Name }}
         </div>
       </div>
-    </dialog>
-
-    <!--Delete Product Modal-->
-    <dialog id="deleteProductModal" class="modal">
-      <div class="modal-box !max-w-[390px] p-5">
+      <div class="tg-modal-delete">
         <form method="dialog">
-          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+          <button class="mt-1 btn shadow-xs h-7 mr-2 px-2 py-1 text-[12px]">Cancel</button>
         </form>
-        <div class="leading-none">
-          <p class="text-lg font-bold">Do you really want to delete this product?</p>
-          <div class="mt-1 text-xs fton-bold bg-[#b07166] text-white w-min m-min px-2 py-1 rounded-[15px]">
-            {{productForm.name}}
-          </div>
-          <div class="text-xs pt-2 text-[#f00]">{{ messages.delete }}</div>
-          <p class="text-[11px] mt-5">This action cannot be reversed</p>
-          <button @click="deleteProduct()" class="mt-1 btn btn-error shadow-xs h-7">Delete</button>
-        </div>
-
+        <button
+          @click="deleteProduct()"
+          class="mt-1 btn btn-error shadow-xs h-7 px-2 py-1 text-[12px]"
+        >
+          Delete
+        </button>
       </div>
-    </dialog>
+    </div>
+  </dialog>
 </template>
-
