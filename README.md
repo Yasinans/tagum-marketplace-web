@@ -15,7 +15,7 @@
 - **Inventory Management System (IMS)**: Track and manage inventory in real-time.
 - **User Authentication**: Secure login system using bcryptjs and JSON Web Tokens (JWT).
 - **Responsive Design**: Built with TailwindCSS and DaisyUI for a modern and responsive UI.
-- **Data Visualization**: Display sales and inventory data using ApexCharts.
+- **Data Visualization**: Display sales data using ApexCharts.
 
 ---
 
