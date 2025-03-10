@@ -25,9 +25,7 @@ const {
 const {
   productVariantDatas,
   filteredProductVariantDatas,
-  loadProductVariant,
   selectedProductVariantId,
-  productVariantSearch,
 } = useProductVariant();
 
 const {
@@ -43,7 +41,6 @@ const {
 const {
   selectedCustomerId,
   filteredCustomerDatas,
-  customerSearch,
   customerForm,
   saveCustomer,
   resetCustomerForm,
