@@ -51,8 +51,8 @@
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-repo/tagum-marketplace-pos-ims.git
-   cd tagum-marketplace-pos-ims
+   git clone https://github.com/Yasinans/tagum-marketplace-web.git
+   cd tagum-marketplace-web
    ```
 
 2. **Install dependencies**:
