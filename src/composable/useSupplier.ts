@@ -3,38 +3,37 @@ import { SupplierData, supplierService } from "../api/supplier";
 import axios from "axios";
 
 export function useSupplier() {
-  const selectedSupplierId = ref<number | null>(null);
+  const selectedSupplierId = ref<number>(0);
   const supplierSearch = ref("");
   const supplierDatas = ref<SupplierData[]>([]);
   const messages = reactive({ edit: "", add: "", delete: "" });
-  const supplierForm = reactive<SupplierData>({
-    id: 0,
-    name: "",
-    address: "",
-    email: "",
-    contactno: "",
-  });
+  const initialSupplierForm = {
+    Supplier_ID: 0,
+    Supplier_Name: "",
+    Supplier_Email: "",
+    Supplier_Address: "",
+    Supplier_ContactNo: "",
+  }
+  const supplierForm = ref({ ...initialSupplierForm });
+
+  const resetSupplierForm = () => {
+    supplierForm.value = { ...initialSupplierForm };
+  };
 
   const filteredSupplierDatas = computed(() =>
-    supplierDatas.value.filter(({ name }) =>
-      name.toLowerCase().includes(supplierSearch.value.toLowerCase())
+    supplierDatas.value.filter(({ Supplier_Name }) =>
+      Supplier_Name.toLowerCase().includes(supplierSearch.value.toLowerCase())
     )
   );
 
   const saveSupplier = async (isEdit: boolean) => {
     if (
-      !supplierForm.name ||
-      !supplierForm.address ||
-      !supplierForm.email ||
-      !supplierForm.contactno
+      !supplierForm.value.Supplier_Name ||
+      !supplierForm.value.Supplier_Address ||
+      !supplierForm.value.Supplier_Email ||
+      !supplierForm.value.Supplier_ContactNo
     ) {
       messages[isEdit ? "edit" : "add"] = "Please fill in all fields.";
-      return;
-    }
-    const contactNoRegex = /^\+?\d{12}$/;
-    if (!contactNoRegex.test(supplierForm.contactno)) {
-      messages[isEdit ? "edit" : "add"] =
-        "Contact number should be in the format +639xxxxxxxxx or 09xxxxxxxxx.";
       return;
     }
 
@@ -44,13 +43,23 @@ export function useSupplier() {
           return (messages.edit = "No supplier selected.");
         await supplierService.updateSupplier(
           selectedSupplierId.value,
-          supplierForm
+          {
+            name: supplierForm.value.Supplier_Name,
+            email: supplierForm.value.Supplier_Email,
+            address: supplierForm.value.Supplier_Address,
+            contactno: supplierForm.value.Supplier_ContactNo
+          }
         );
         (
           document.getElementById("editSupplierModal") as HTMLDialogElement
         ).close();
       } else {
-        await supplierService.createSupplier(supplierForm);
+        await supplierService.createSupplier({
+          name: supplierForm.value.Supplier_Name,
+          email: supplierForm.value.Supplier_Email,
+          address: supplierForm.value.Supplier_Address,
+          contactno: supplierForm.value.Supplier_ContactNo
+        });
         (
           document.getElementById("addSupplierModal") as HTMLDialogElement
         ).close();
@@ -83,13 +92,7 @@ export function useSupplier() {
   const loadSupplier = async () => {
     try {
       const response = await supplierService.getSuppliers();
-      supplierDatas.value = response.data.map((supplierData: any) => ({
-        id: supplierData.Supplier_ID,
-        name: supplierData.Supplier_Name,
-        email: supplierData.Supplier_Email,
-        address: supplierData.Supplier_Address,
-        contactno: supplierData.Supplier_ContactNo,
-      }));
+      supplierDatas.value = response.data;
     } catch (err) {
       console.error("Error loading suppliers:", err);
     }
@@ -98,6 +101,7 @@ export function useSupplier() {
   onMounted(loadSupplier);
 
   return {
+    resetSupplierForm,
     supplierDatas,
     supplierSearch,
     filteredSupplierDatas,

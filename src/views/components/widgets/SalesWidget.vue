@@ -4,12 +4,12 @@ import {
   ArrowPathRoundedSquareIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/vue/24/solid";
-
+import { ref, computed } from "vue";
 import { useSale } from "../../../composable/useSale";
 import { useCustomer } from "../../../composable/useCustomer";
 import { useProductVariant } from "../../../composable/useProductVariant";
 import { useSaleDetail } from "../../../composable/useSaleDetail";
-import { ref, computed } from "vue";
+
 const {
   selectedSaleId,
   saleSearch,
@@ -65,25 +65,44 @@ interface SaleDetailCreate {
 const orderDetails = ref<SaleDetailData[]>([]);
 
 const addToOrderDetails = () => {
+  if (!selectedProductVariantId.value) {
+    saleMessages.add = "A product variant must be selected.";
+    return;
+  }
+  if (saleDetailForm.value.quantity <= 0) {
+    saleMessages.add = "Quantity must be greater than zero.";
+    return;
+  }
+
+  const productVariant = productVariantDatas.value.find(
+    (e) => e.Bar_Code === selectedProductVariantId.value
+  );
+
+  if (!productVariant) {
+    saleMessages.add = "Selected product variant not found.";
+    return;
+  }
+
+  if (productVariant.Inventory_Quantity < saleDetailForm.value.quantity) {
+    saleMessages.add = "Not enough quantity in inventory.";
+    return;
+  }
+
   const existingOrder = orderDetails.value.find(
     (e) => e.barCode === selectedProductVariantId.value
   );
+
   if (existingOrder) {
     existingOrder.quantity += saleDetailForm.value.quantity;
   } else {
     orderDetails.value.push({
       barCode: selectedProductVariantId.value ?? "",
-      unitPrice:
-        productVariantDatas.value.find(
-          (e) => e.Bar_Code === selectedProductVariantId.value
-        )?.Unit_Price || 0,
-      productName:
-        productVariantDatas.value.find(
-          (e) => e.Bar_Code === selectedProductVariantId.value
-        )?.Product_Name || "",
+      unitPrice: productVariant.Unit_Price || 0,
+      productName: productVariant.Product_Name || "",
       quantity: saleDetailForm.value.quantity,
     });
   }
+  saleMessages.add = "";
   resetSaleDetailForm();
 };
 
@@ -96,11 +115,15 @@ const processSale = async () => {
     })
   );
   if (saleDetailCreates.length === 0) {
-    saleMessages.add = "There must be atleast one sale detail.";
+    saleMessages.add = "There must be at least one sale detail.";
     return;
   }
   if (selectedCustomerId.value == -1) {
     selectedCustomerId.value = await saveCustomer(false);
+  }
+  if (selectedCustomerId.value === undefined) {
+    saleMessages.add = "No customer selected.";
+    return;
   }
   saleForm.customerId = selectedCustomerId.value;
   const id = await saveSale(false);
@@ -108,7 +131,7 @@ const processSale = async () => {
   orderDetails.value = [];
   resetSaleDetailForm();
   resetCustomerForm();
-  selectedCustomerId.value = 0;
+  selectedCustomerId.value = -1;
   selectedProductVariantId.value = "";
 };
 
@@ -123,7 +146,44 @@ function getTotalAmount(saleId: number) {
     0
   );
 }
+
 const isNewCustomer = computed(() => selectedCustomerId.value === -1);
+
+const validationErrors = ref({
+  customerName: "",
+  customerAddress: "",
+  customerPhone: "",
+  productVariant: "",
+  quantity: "",
+});
+
+const resetValidationErrors = () => {
+  validationErrors.value = {
+    customerName: "",
+    customerAddress: "",
+    customerPhone: "",
+    productVariant: "",
+    quantity: "",
+  };
+};
+
+const validateForm = () => {
+  validationErrors.value = {
+    customerName: isNewCustomer.value && !customerForm.value.name ? "Customer Name is required." : "",
+    customerAddress: isNewCustomer.value && !customerForm.value.address ? "Customer Address is required." : "",
+    customerPhone: isNewCustomer.value && !customerForm.value.phone ? "Customer Phone is required." : "",
+    productVariant: !selectedProductVariantId.value ? "Product is required." : "",
+    quantity: saleDetailForm.value.quantity <= 0 ? "Quantity must not be below 0." : "",
+  };
+
+  return Object.values(validationErrors.value).every((error) => error === "");
+};
+
+const handleSubmit = () => {
+  if (validateForm()) {
+    processSale();
+  }
+};
 </script>
 
 <template>
@@ -138,7 +198,9 @@ const isNewCustomer = computed(() => selectedCustomerId.value === -1);
         <div @click="loadSale()" class="tg-widget-btn mr-2 tooltip tooltip-left" data-tip="Refresh">
           <arrow-path-rounded-square-icon class="tg-widget-btn-icon" />
         </div>
-        <div onclick="addSaleModal.showModal()" class="tg-widget-btn mr-2 tooltip tooltip-left" data-tip="Add New Sale">
+        <div onclick="addSaleModal.showModal()" 
+        @click="resetValidationErrors(); resetSaleDetailForm(); resetCustomerForm(); selectedCustomerId = -1; selectedProductVariantId = '';"
+        class="tg-widget-btn mr-2 tooltip tooltip-left" data-tip="Add New Sale">
           <plus-icon class="tg-widget-btn-icon" />
         </div>
       </div>
@@ -165,7 +227,10 @@ const isNewCustomer = computed(() => selectedCustomerId.value === -1);
             <td>
               <div class="flex gap-[10px] justify-start !pr-[20px]">
                 <button class="btn h-[25px] p-[12px] shadow-md bg-[#f5e6e6] border-none"
-                  onclick="viewSaleDetails.showModal()" @click="saleDetailSearch = sale.id">
+                  onclick="viewSaleDetails.showModal()" 
+                  @click="
+                  resetValidationErrors();
+                  saleDetailSearch = sale.id">
                   View Order Details
                 </button>
                 <button @click="selectedSaleId = sale.id" onclick="deleteSaleModal.showModal()"
@@ -180,181 +245,188 @@ const isNewCustomer = computed(() => selectedCustomerId.value === -1);
     </div>
   </div>
 
-  <!--Add Sale Modal-->
+  <!-- Add Sale Modal -->
   <dialog id="addSaleModal" class="modal">
     <div class="modal-box !max-w-[700px]">
       <form method="dialog">
-        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
-          ✕
-        </button>
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
       </form>
       <div class="leading-none mb-1">
         <p class="text-lg font-bold">Create Sale</p>
       </div>
-      <div id="edit-form">
-        <fieldset class="fieldset bg-base-200 border border-base-300 p-4 rounded-box">
-          <!--For Customer Details-->
-          <legend class="fieldset-legend">Customer Details</legend>
-          <fieldset class="fieldset w-full bg-base-200 border border-base-300 p-4 rounded-box join">
-            <legend class="fieldset-legend">Existing Customer</legend>
-            <input type="text" v-model="customerSearch" class="input w-full" placeholder="Search Customer Name"
-              required />
-            <select class="select select-bordered w-full" v-model="selectedCustomerId">
-              <option :value="-1" selected>New Customer</option>
+      <fieldset class="fieldset bg-base-200 border border-base-300 p-4 rounded-box">
+        <legend class="fieldset-legend">Customer Details</legend>
+        <div class="join">
+          <div class="flex flex-col grow mr-3">
+            <p class="text-xs pb-1">Customer:</p>
+            <select v-model="selectedCustomerId" class="rounded-[6px] h-[27px] px-2 py-1 max-w-xs">
+              <option :value="-1">New Customer</option>
               <option v-for="customer in filteredCustomerDatas" :key="customer.id" :value="customer.id">
                 {{ customer.name }} - {{ customer.address }}
               </option>
             </select>
-          </fieldset>
-          <fieldset class="fieldset w-full bg-base-200 border border-base-300 p-4 rounded-box"
-            :class="{ hidden: !isNewCustomer }">
-            <legend class="fieldset-legend">New Customer</legend>
-            <label class="fieldset-label">Customer Name</label>
-            <input type="text" class="input" v-model="customerForm.name" placeholder="Customer Name" required />
-            <label class="fieldset-label">Customer Address</label>
-            <input type="text" class="input" v-model="customerForm.address" placeholder="Customer Address" />
-            <label class="fieldset-label">Customer Contact No.</label>
-            <input type="text" class="input" v-model="customerForm.phone" placeholder="Contact No." />
-          </fieldset>
-          <!--End Customer Details-->
-        </fieldset>
-        <!--For Product Details-->
-        <fieldset class="fieldset w-full bg-base-200 border border-base-300 p-4 rounded-box">
-          <legend class="fieldset-legend">Add Products</legend>
-          <div class="join">
-            <input type="text" v-model="productVariantSearch" class="input mr-3"
-              placeholder="Search Product Name or Barcode" required />
-            <select class="select select-bordered" v-model="selectedProductVariantId">
+          </div>
+          <div v-if="isNewCustomer" class="grow flex flex-col">
+            <p class="text-xs pb-1">Customer Name:</p>
+            <input v-model="customerForm.name" type="text" placeholder="Customer Name"
+              class="rounded-[6px] px-2 py-1 max-w-xs" />
+            <p v-if="validationErrors.customerName" class="text-xs pt-1 !text-[#5e050a]">
+              {{ validationErrors.customerName }}
+            </p>
+          </div>
+        </div>
+        <div class="join">
+          <div v-if="isNewCustomer" class="grow flex flex-col mr-3 ">
+            <p class="text-xs pb-1">Customer Address:</p>
+            <input v-model="customerForm.address" type="text" placeholder="Customer Address"
+              class="rounded-[6px] px-2 py-1 max-w-xs" />
+            <p v-if="validationErrors.customerAddress" class="text-xs pt-1 !text-[#5e050a]">
+              {{ validationErrors.customerAddress }}
+            </p>
+          </div>
+          <div v-if="isNewCustomer" class="grow flex flex-col">
+            <p class="text-xs pb-1">Customer Phone:</p>
+            <input v-model="customerForm.phone" type="text" placeholder="Customer Phone"
+              class="rounded-[6px] px-2 py-1 max-w-xs" />
+            <p v-if="validationErrors.customerPhone" class="text-xs pt-1 !text-[#5e050a]">
+              {{ validationErrors.customerPhone }}
+            </p>
+          </div>
+        </div>
+      </fieldset>
+      <fieldset class="fieldset bg-base-200 border border-base-300 p-4 rounded-box mt-2">
+        <legend class="fieldset-legend">Product Details</legend>
+        <div class="join">
+          <div class="flex flex-col grow mr-3">
+            <p class="text-xs pb-1">Product:</p>
+            <select v-model="selectedProductVariantId" class="rounded-[6px] px-2 py-1 max-w-xs">
               <option v-for="product in filteredProductVariantDatas" :key="product.Bar_Code" :value="product.Bar_Code">
                 {{ product.Bar_Code }} - {{ product.Product_Name }}
-                {{ product.Unit_Weight }}{{ product.Unit_Size }}
               </option>
             </select>
+            <p v-if="validationErrors.productVariant" class="text-xs pt-1 !text-[#5e050a]">
+              {{ validationErrors.productVariant }}
+            </p>
           </div>
-          <div class="join">
-            <div class="w-full mr-3">
-              <label class="fieldset-label">Quantity</label>
-              <input v-model="saleDetailForm.quantity" type="number" class="input" :min="1" placeholder="Quantity" />
+          <div class="flex flex-col grow">
+            <p class="text-xs pb-1">Quantity:</p>
+            <input v-model="saleDetailForm.quantity" type="number" placeholder="Quantity"
+              class="rounded-[6px] px-2 py-1 max-w-xs" />
+            <p v-if="validationErrors.quantity" class="text-xs pt-1 !text-[#5e050a]">
+              {{ validationErrors.quantity }}
+            </p>
+          </div>
+        </div>
+        <div class="flex flex-col">
+          <p class="text-xs">Subtotal:</p>
+          <p>
+            ₱{{
+              (productVariantDatas.find(
+                (e) => e.Bar_Code === selectedProductVariantId
+              )?.Unit_Price || 0) * saleDetailForm.quantity
+            }}
+          </p>
+          
+        </div>
+        <div v-if="saleMessages.add" class="text-xs pt-2 text-[#5e050a] text-wrap">{{ saleMessages.add }}</div>
+        <button @click="addToOrderDetails()" class="btn btn-error shadow-xs h-7 px-2 py-1 text-[12px] mt-2">
+          Add Product
+        </button>
+      </fieldset>
+      <div class="mt-4">
+        <ul class="list bg-base-100 rounded-box shadow-md">
+          <li v-for="order in orderDetails" :key="order.barCode" class="list-row">
+            <div class="pr-5 border-r border-gray-300">
+              <div>Bar Code</div>
+              <div class="text-xs uppercase font-semibold opacity-60">
+                {{ order.barCode }}
+              </div>
             </div>
-            <div class="w-full">
-              <p>
-                Subtotal:
-                {{
-                  (productVariantDatas.find(
-                    (e) => e.Bar_Code === selectedProductVariantId
-                  )?.Unit_Price || 0) * saleDetailForm.quantity
+            <div>
+              <div class="font-semibold">{{ order.productName }}</div>
+              <div class="text-xs uppercase font-semibold opacity-60">
+                QUANTITY: {{ order.quantity }} PCS, SUBTOTAL: ₱{{
+                  order.unitPrice * order.quantity
                 }}
-              </p>
-              <button @click="addToOrderDetails()" class="btn rounded-[13px]"
-                v-bind:class="{ hidden: !selectedProductVariantId }">
-                Add
-              </button>
+              </div>
             </div>
-          </div>
-        </fieldset>
-        <!--list of order-->
-        <!--list-->
-        <div>
-          <ul class="list bg-base-100 rounded-box shadow-md mt-5">
-            <li v-for="order in orderDetails" :key="order.barCode" class="list-row">
-              <div class="pr-5 border-r border-gray-300">
-                <div>Bar Code</div>
-                <div class="text-xs uppercase font-semibold opacity-60">
-                  {{ order.barCode }}
-                </div>
-              </div>
-              <div>
-                <div class="font-semibold">{{ order.productName }}</div>
-                <div class="text-xs uppercase font-semibold opacity-60">
-                  QUANTITY: {{ order.quantity }} PCS, SUBTOTAL: ₱{{
-                    order.unitPrice * order.quantity
-                  }}
-                </div>
-              </div>
-              <button @click="
-                orderDetails = orderDetails.filter(
-                  (o) => o.barCode !== order.barCode
-                )
-                " class="btn btn-ghost border-gray-300">
-                Remove
-              </button>
-            </li>
-          </ul>
-        </div>
-        <div class="text-xs pt-2 text-[#f00] text-wrap">
-          {{ saleMessages.add }}
-        </div>
-
-        <div class="modal-action">
-          <button @click="processSale()" class="btn shadow-md text-[#3f1e61] border-[#877cde] border-1 h-9">
-            Add Sale
-          </button>
-        </div>
+            <button @click="orderDetails = orderDetails.filter((o) => o.barCode !== order.barCode)"
+              class="btn btn-ghost border-gray-300">
+              Remove
+            </button>
+          </li>
+        </ul>
+      </div>
+      <div class="modal-action">
+        <form method="dialog">
+          <button class="btn shadow-xs h-7 mr-2 px-2 py-1 text-[12px]">Cancel</button>
+        </form>
+        <button @click="handleSubmit()" class="btn btn-error shadow-xs h-7 px-2 py-1 text-[12px]">
+          Create Sale
+        </button>
       </div>
     </div>
   </dialog>
 
-  <!--Edit Sale Modal-->
+  <!-- View Sale Details Modal -->
   <dialog id="viewSaleDetails" class="modal">
     <div class="modal-box !max-w-[700px]">
       <form method="dialog">
-        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
-          ✕
-        </button>
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
       </form>
       <div class="leading-none mb-1">
         <p class="text-lg font-bold">View Sale Details</p>
       </div>
-      <div id="edit-form">
-        <!--list of order-->
-        <div>
-          <ul class="list bg-base-100 rounded-box shadow-md mt-5">
-            <li v-for="order in filteredSaleDetailDatas" :key="order.barCode" class="list-row">
-              <div class="pr-5 border-r border-gray-300">
-                <div>Bar Code</div>
-                <div class="text-xs uppercase font-semibold opacity-60">
-                  {{ order.barCode }}
-                </div>
+      <div>
+        <ul class="list bg-base-100 rounded-box shadow-md mt-5">
+          <li v-for="order in filteredSaleDetailDatas" :key="order.barCode" class="list-row">
+            <div class="pr-5 border-r border-gray-300">
+              <div>Bar Code</div>
+              <div class="text-xs uppercase font-semibold opacity-60">
+                {{ order.barCode }}
               </div>
-              <div>
-                <div class="font-semibold">
-                  {{
-                    productVariantDatas.find(
-                      (e) => e.Bar_Code === order.barCode
-                    )?.Product_Name
-                  }}
-                </div>
-                <div class="text-xs uppercase font-semibold opacity-60">
-                  QUANTITY: {{ order.quantity }} PCS, SUBTOTAL: ₱{{
-                    order.unitPrice * order.quantity
-                  }}
-                </div>
+            </div>
+            <div>
+              <div class="font-semibold">
+                {{
+                  productVariantDatas.find(
+                    (e) => e.Bar_Code === order.barCode
+                  )?.Product_Name
+                }}
               </div>
-              <button @click="deleteSaleDetail(order.barCode, order.saleId)" class="btn btn-ghost border-gray-300">
-                Remove
-              </button>
-            </li>
-          </ul>
-        </div>
+              <div class="text-xs uppercase font-semibold opacity-60">
+                QUANTITY: {{ order.quantity }} PCS, SUBTOTAL: ₱{{
+                  order.unitPrice * order.quantity
+                }}
+              </div>
+            </div>
+            <button @click="deleteSaleDetail(order.barCode, order.saleId)" class="btn btn-ghost border-gray-300">
+              Remove
+            </button>
+          </li>
+        </ul>
       </div>
     </div>
   </dialog>
-  <!--Delete Sale Modal-->
+
+  <!-- Delete Sale Modal -->
   <dialog id="deleteSaleModal" class="modal">
-    <div class="modal-box !max-w-[390px] p-5">
-      <form method="dialog">
-        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
-          ✕
-        </button>
-      </form>
-      <div class="leading-none">
-        <p class="text-lg font-bold">Do you really want to delete this sale?</p>
-        <div class="mt-1 text-xs fton-bold bg-[#b07166] text-white w-min m-min px-2 py-1 rounded-[15px]">
+    <div class="modal-box tg-modal p-0 !max-w-fit !min-w-[400px]">
+      <div class="border-b-1 border-[#8a544a] mb-2 flex items-center pb-2 m-4">
+        <p class="text-[16px] font-bold">Delete Sale</p>
+      </div>
+      <div class="mb-4 pl-6 pt-0 pr-6 flex flex-col">
+        <p class="text-[14px] font-medium">Do you really want to delete this sale?</p>
+        <p class="text-[11px]">This action cannot be reversed</p>
+        <div class="self-center mt-2 text-xs bg-[#9c2737] text-white w-min h-min m-min px-2 py-1 rounded-[10px]">
           {{ selectedSaleId }}
         </div>
-        <div class="text-xs pt-2 text-[#f00]">{{ saleMessages.delete }}</div>
-        <p class="text-[11px] mt-5">This action cannot be reversed</p>
-        <button @click="deleteSale()" class="mt-1 btn btn-error shadow-xs h-7">
+      </div>
+      <div class="tg-modal-delete">
+        <form method="dialog">
+          <button class="mt-1 btn shadow-xs h-7 mr-2 px-2 py-1 text-[12px]">Cancel</button>
+        </form>
+        <button @click="deleteSale()" class="mt-1 btn btn-error shadow-xs h-7 px-2 py-1 text-[12px]">
           Delete
         </button>
       </div>

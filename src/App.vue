@@ -5,7 +5,6 @@ const router = useRouter();
 onMounted(() => {
   router.push('/');
 });
-//auto push depending on  role, call first
 </script>
 
 <template>

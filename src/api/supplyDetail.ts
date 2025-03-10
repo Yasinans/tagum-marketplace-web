@@ -6,7 +6,7 @@ export interface SupplyDetailData {
     Supply_ID: number;
     Quantity: number;
     Bar_Code: string;
-    Unit_Price: string;
+    Unit_Price: number;
     Expiry: Date;
     Subtotal: number;
 }
@@ -15,14 +15,14 @@ export interface SupplyDetailCreate {
   barCode: string;
   supplyId: number;
   quantity: number;
-  unitPrice: string;
+  unitPrice: number;
   expiry: string;
 }
 
 
 export interface SupplyDetailUpdate {
   quantity: number;
-  unitPrice: string;
+  unitPrice: number;
   expiry: string;
 }
 

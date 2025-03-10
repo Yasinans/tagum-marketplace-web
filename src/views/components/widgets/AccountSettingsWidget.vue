@@ -6,7 +6,8 @@ const userAccountForm = ref({
     "username": getUsername(),
     "password": "",
 });
-const message = ref("");
+const successMessage = ref("");
+const errorMessage = ref("");
 const updateAccount = async () => {
 try {
     const api = axios.create({
@@ -21,11 +22,12 @@ try {
     });
     const response = await api.put('/', userAccountForm.value);
     if (response.status == 200){
-        message.value = "Account updated successfully";
-        //log out
+        successMessage.value = "Account updated successfully";
+        errorMessage.value = "";
     }
 } catch (err: AxiosError | any) {
-    message.value = err.response?.data?.error
+    errorMessage.value = err.response?.data?.error;
+    successMessage.value = "";
 }
 
 }
@@ -47,12 +49,14 @@ try {
                 <legend class="fieldset-legend text-white">Password:</legend>
                 <input v-model="userAccountForm.password" id="password" type="text" class="input h-8 w-full text-black">
             </fieldset>
-            <p class="text-center mt-2" :class="{'text-green-500': message && !message.includes('Error'), 'text-red-500': message && message.includes('Error')}">{{ message }}</p>
+            <p v-if="successMessage" class="text-sm text-center mt-2 text-green-500">{{ successMessage }}</p>
+            <p v-if="errorMessage" class="text-sm  text-center mt-2 text-red-500">{{ errorMessage }}</p>
             
-            <button class="btn btn-neutral mt-4" @click="updateAccount()">Update Account</button>
+            <button class="btn btn-neutral mt-2" @click="updateAccount()">Update Account</button>
 
         </div>
     </div>
 </template>
 
 <style lang="css" scoped></style>
+

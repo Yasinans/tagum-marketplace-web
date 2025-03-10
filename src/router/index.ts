@@ -1,7 +1,7 @@
 import {createRouter, createWebHistory} from 'vue-router';
 import Login from '../views/Login.vue'
 import UserPanel from '../views/UserPanel.vue';
-import AdminDashboard from '../views/admin/AdminDashboard.vue';
+import Dashboard from '../views/Dashboard.vue';
 import AdminUserManagement from '../views/admin/AdminUserManagement.vue';
 import AdminSales from '../views/admin/AdminSales.vue';
 import AdminProduct from '../views/admin/AdminProduct.vue';
@@ -11,6 +11,7 @@ import CashierCustomers from '../views/cashier/CashierCustomers.vue';
 import Settings from '../views/Settings.vue';
 import StockProduct from '../views/stockman/StockProduct.vue';
 import StockSupply from '../views/stockman/StockSupply.vue';
+import NotFound from '../views/NotFound.vue';
 const router = createRouter({
     history:createWebHistory(),
     routes: [
@@ -20,7 +21,7 @@ const router = createRouter({
             children: [
                 {
                     path: '/admin', 
-                    component: AdminDashboard,
+                    component: Dashboard,
                     meta: { 
                         requiresAuth: true 
                     }},
@@ -36,7 +37,7 @@ const router = createRouter({
             children: [
                 {
                     path: '/cashier', 
-                    component: AdminDashboard,
+                    component: Dashboard,
                     meta: { 
                         requiresAuth: true 
                     }},
@@ -51,7 +52,7 @@ const router = createRouter({
             children: [
                 {
                     path: '/stockman', 
-                    component: AdminDashboard,
+                    component: Dashboard,
                     meta: { 
                         requiresAuth: true 
                     }},
@@ -63,7 +64,8 @@ const router = createRouter({
         { 
             path:'/', 
             component: Login
-        }
+        },
+        { path: '/:pathMatch(.*)*', component: NotFound },
     ]
 })
 export default router;

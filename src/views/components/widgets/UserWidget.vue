@@ -74,9 +74,9 @@ const handleSubmit = (isEdit: boolean) => {
   <div class="flex items-center bg-[#804c4c] w-[100%] py-2 px-3 rounded-[13px] shadow-md">
     <label class="input text-[14px] h-[32px] grow  bg-[#f7f2f2]">
       <magnifying-glass-icon class="h-[20px] pr-1" />
-      <input type="search" class="grow" placeholder="Search By Full Name" v-model="employeeUserSearch.name" />
+      <input type="search" placeholder="Search By Full Name" v-model="employeeUserSearch.name" />
     </label>
-    <div class="flex ml-140 justify-end">
+    <div class="flex justify-end">
       <div class="dropdown dropdown-end tooltip" data-tip="Only show a specific role.">
         <div tabindex="0" role="button"
           class="flex btn h-[34px] px-3 shadow-md bg-[#f7f0f0] ml-2 border-[#4d2f2d] radius-[3px]">

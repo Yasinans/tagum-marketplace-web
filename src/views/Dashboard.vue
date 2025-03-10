@@ -10,7 +10,7 @@ import {
 
 <template>
   <main class="dashboard-container">
-    <div class="font-med text-[18px] text-white tracking-tighter">Admin Dashboard</div>
+    <div class="font-med text-[18px] text-white tracking-tighter">Dashboard</div>
     <div class="dashboard-1">
       <total-earning-widget/>
       <number-sales-widget/>

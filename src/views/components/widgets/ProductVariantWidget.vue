@@ -193,7 +193,7 @@ const handleSubmit = (isEdit: boolean) => {
       <div class="leading-none mb-1 flex items-center">
         <p class="text-lg font-bold">Edit Product Variant Info</p>
         <div class="text-[12px] ml-[10px] bg-[#b0594a] text-white badge">
-          {{productVariantDatas.find((e) => e.Bar_Code === selectedProductVariantId)?.Product_Name}}
+          {{productVariantDatas.find((e) => e.Bar_Code === selectedProductVariantId)?.Bar_Code}}
         </div>
       </div>
       <fieldset class="fieldset w-xs bg-base-200 border border-base-300 p-4 rounded-box mt-2">

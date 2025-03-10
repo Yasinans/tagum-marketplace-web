@@ -2,6 +2,7 @@
 import { ChartBarSquareIcon, UsersIcon, Cog8ToothIcon, ArchiveBoxArrowDownIcon } from '@heroicons/vue/24/solid';
 import { ref } from 'vue'
 import { getRole } from '../../utils/authUtil';
+import logo from '../../assets/logo.png'
 const currentPage = ref('dashboard'); 
 const role = ref(getRole());
 function changePage(page){
@@ -11,7 +12,9 @@ function changePage(page){
 
 <template>
     <div class="navbar">
-        <div class="w-full h-[71px] shrink-0 mb-8"></div>
+        <div class="pt-5 h-[91px] mb-8">
+            <img class=" h-[91px]" :src="logo" alt="logo">
+        </div>
         <div class="nav-title mr-20 font-bold text-sm pb-2">MAIN MENU</div>
 
         <template v-if="role === 'admin'">

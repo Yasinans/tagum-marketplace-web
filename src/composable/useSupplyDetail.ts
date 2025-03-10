@@ -14,7 +14,7 @@ export function useSupplyDetail() {
     Supply_ID: 0,
     Quantity: 0,
     Bar_Code: "",
-    Unit_Price: "",
+    Unit_Price: 0,
     Expiry: new Date(),
     Subtotal: 0,
 }
