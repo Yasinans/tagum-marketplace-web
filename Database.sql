@@ -201,10 +201,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`Employee_ID`, `Username`, `Password`, `Role`, `User_DateReg`) VALUES
-(4, 'admin', '$2b$10$J49fC3.1.NFwhtYYrDuqPusz245mhPgqXpfjSFfiZvOTL.ZVMoDm.', 'admin', '2025-02-28 17:37:40'),
-(7, 'stockmans', '$2b$10$ej9nyycFN3yr98eQS.WVsOKXfVgTwUl0ruS4Hb.C9eg9SbZ3lF5wm', 'stockman', '2025-03-07 07:18:51'),
-(10, 'cashiers', '$2b$10$zuXbOO/LlgewF4ghDx09M.s24MmBYm41CuKkhq97MFigV1QLkxv9W', 'cashier', '2025-03-08 16:02:57'),
-(11, '123', '$2b$10$gdS3LMy9BEi1keKYePpcJufil7XjkRGsZAoy63P23okIhZ4C9soAm', 'admin', '2025-03-09 11:35:18');
+(4, 'admin', '$2b$10$J49fC3.1.NFwhtYYrDuqPusz245mhPgqXpfjSFfiZvOTL.ZVMoDm.', 'admin', '2025-02-28 17:37:40');
 
 --
 -- Indexes for dumped tables
