@@ -144,3 +144,9 @@ This project is for educational purposes only and is not intended for public use
 This project was developed as part of a school project. Special thanks to the creators of Vue, TailwindCSS, DaisyUI, and other open-source libraries used in this project.
 
 ---
+
+## Wireframes
+
+![image](https://github.com/user-attachments/assets/0922725d-9447-40d4-9698-9d3f8335f24e)
+
+![image](https://github.com/user-attachments/assets/713162db-8875-4c36-a4df-2e44ac7a7030)
