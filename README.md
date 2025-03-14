@@ -7,6 +7,10 @@
 
 **Tagum Marketplace POS + IMS** is a web-based Point of Sale (POS) and Inventory Management System (IMS) designed specifically for **Tagum Marketplace**. It provides a simple and efficient way to manage sales and inventory for the company.
 
+Try Demo: ![Demo Link](https://tagum-marketplace-production.up.railway.app/)
+Username: admin
+Password: admin
+
 ---
 
 ## Features
